@@ -30,3 +30,4 @@ D:\Christian Carrion\Documents\Documentos\UAGRM\Programacion Grafica\pgproy\obj\
 D:\Christian Carrion\Documents\Documentos\UAGRM\Programacion Grafica\pgproy\obj\Debug\net8.0\ref\..dll
 D:\Christian Carrion\Documents\Documentos\UAGRM\Programacion Grafica\pgproy\bin\Debug\net8.0\Shaders\shader.frag
 D:\Christian Carrion\Documents\Documentos\UAGRM\Programacion Grafica\pgproy\bin\Debug\net8.0\Shaders\shader.vert
+D:\Christian Carrion\Documents\Documentos\UAGRM\Programacion Grafica\pgproy\obj\Debug\net8.0\..sourcelink.json
