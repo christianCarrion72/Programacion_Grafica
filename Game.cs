@@ -4,6 +4,7 @@ using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
 using OpenTK.Windowing.Desktop;
 using OpenTK.Windowing.GraphicsLibraryFramework;
+using proyectoPG;
 
 namespace OpenTKCube
 {
@@ -25,127 +26,9 @@ namespace OpenTKCube
 
         // Rotación simple
         private float _angle = 0f;
-        private readonly float[] _vertices =
-        {
-            // ===== MONITOR =====
-            // Pantalla (frente) - Negro
-            -8f, 2f, 2f,     0f, 0f, 0f,    // 0
-            8f, 2f, 2f,      0f, 0f, 0f,    // 1
-            8f, 12f, 2f,     0f, 0f, 0f,    // 2
-            -8f, 12f, 2f,    0f, 0f, 0f,    // 3
-            
-            // Marco del monitor (trasero) - Gris oscuro
-            -5.5f, 4.5f, -3f,   0.3f, 0.3f, 0.3f,  // 4
-            5.5f, 4.5f, -3f,    0.3f, 0.3f, 0.3f,  // 5
-            5.5f, 10.5f, -3f,   0.3f, 0.3f, 0.3f,  // 6
-            -5.5f, 10.5f, -3f,  0.3f, 0.3f, 0.3f,  // 7
-            
-            // Base del monitor - Gris
-            -2f, 0f, -1f,    0.5f, 0.5f, 0.5f,    // 8
-            2f, 0f, -1f,     0.5f, 0.5f, 0.5f,    // 9
-            2f, 4f, -1f,     0.5f, 0.5f, 0.5f,    // 10
-            -2f, 4f, -1f,    0.5f, 0.5f, 0.5f,    // 11
-            
-            -2f, 0f, 3f,     0.5f, 0.5f, 0.5f,    // 12
-            2f, 0f, 3f,      0.5f, 0.5f, 0.5f,    // 13
-            2f, 1.5f, 3f,      0.5f, 0.5f, 0.5f,    // 14
-            -2f, 1.5f, 3f,     0.5f, 0.5f, 0.5f,    // 15
-
-            // ===== TECLADO =====
-            // Teclado principal - Blanco/Gris claro
-            -6f, 0.2f, 4f,   0.9f, 0.9f, 0.9f,    // 16
-            6f, 0.2f, 4f,    0.9f, 0.9f, 0.9f,    // 17
-            6f, 0.2f, 8f,    0.9f, 0.9f, 0.9f,    // 18
-            -6f, 0.2f, 8f,   0.9f, 0.9f, 0.9f,    // 19
-            
-            -6f, 0f, 4f,     0.8f, 0.8f, 0.8f,    // 20
-            6f, 0f, 4f,      0.8f, 0.8f, 0.8f,    // 21
-            6f, 0f, 8f,      0.8f, 0.8f, 0.8f,    // 22
-            -6f, 0f, 8f,     0.8f, 0.8f, 0.8f,    // 23
-
-            // ===== CPU =====
-            // Frente de la CPU - Negro/Gris oscuro
-            12f, 0f, -3f,    0.2f, 0.2f, 0.2f,    // 24
-            16f, 0f, -3f,    0.2f, 0.2f, 0.2f,    // 25
-            16f, 12f, -3f,   0.2f, 0.2f, 0.2f,    // 26
-            12f, 12f, -3f,   0.2f, 0.2f, 0.2f,    // 27
-            
-            // Trasero de la CPU
-            12f, 0f, 5f,     0.15f, 0.15f, 0.15f, // 28
-            16f, 0f, 5f,     0.15f, 0.15f, 0.15f, // 29
-            16f, 12f, 5f,    0.15f, 0.15f, 0.15f, // 30
-            12f, 12f, 5f,    0.15f, 0.15f, 0.15f, // 31
-
-            // ===== MESA =====
-            // Mesa - Marrón claro
-            -20f, -0.5f, -10f,  0.6f, 0.4f, 0.2f,  // 32
-            20f, -0.5f, -10f,   0.6f, 0.4f, 0.2f,  // 33
-            20f, -0.5f, 15f,    0.6f, 0.4f, 0.2f,  // 34
-            -20f, -0.5f, 15f,   0.6f, 0.4f, 0.2f,  // 35
-            
-            -20f, -1f, -10f,    0.5f, 0.3f, 0.15f, // 36
-            20f, -1f, -10f,     0.5f, 0.3f, 0.15f, // 37
-            20f, -1f, 15f,      0.5f, 0.3f, 0.15f, // 38
-            -20f, -1f, 15f,     0.5f, 0.3f, 0.15f, // 39
-        };
-
-        private readonly uint[] _indices =
-        {
-            // MONITOR
-            // Pantalla (frente)
-            0, 1, 2,    2, 3, 0,
-            // Marco trasero
-            4, 5, 6,    6, 7, 4,
-            // Laterales del monitor
-            0, 4, 7,    7, 3, 0,    // Izquierda
-            1, 5, 6,    6, 2, 1,    // Derecha
-            0, 1, 5,    5, 4, 0,    // Inferior
-            3, 2, 6,    6, 7, 3,    // Superior
-            
-            // Base del monitor
-            // Cara superior
-            11, 10, 14,  14, 15, 11,
-            // Cara inferior
-            8, 9, 13,    13, 12, 8,
-            // Laterales
-            8, 11, 15,   15, 12, 8,    // Izquierda
-            9, 10, 14,   14, 13, 9,    // Derecha
-            8, 9, 10,    10, 11, 8,    // Frente
-            12, 13, 14,  14, 15, 12,   // Atrás
-
-            // TECLADO
-            // Cara superior
-            16, 17, 18,  18, 19, 16,
-            // Cara inferior
-            20, 23, 22,  22, 21, 20,
-            // Laterales
-            16, 20, 23,  23, 19, 16,   // Izquierda
-            17, 21, 22,  22, 18, 17,   // Derecha
-            16, 17, 21,  21, 20, 16,   // Frente
-            19, 18, 22,  22, 23, 19,   // Atrás
-
-            // CPU
-            // Frente
-            24, 25, 26,  26, 27, 24,
-            // Atrás
-            28, 31, 30,  30, 29, 28,
-            // Laterales
-            24, 28, 31,  31, 27, 24,   // Izquierda
-            25, 29, 30,  30, 26, 25,   // Derecha
-            24, 25, 29,  29, 28, 24,   // Inferior
-            27, 26, 30,  30, 31, 27,   // Superior
-
-            // MESA
-            // Cara superior
-            32, 33, 34,  34, 35, 32,
-            // Cara inferior
-            36, 39, 38,  38, 37, 36,
-            // Laterales
-            32, 36, 39,  39, 35, 32,   // Izquierda
-            33, 37, 38,  38, 34, 33,   // Derecha
-            32, 33, 37,  37, 36, 32,   // Frente
-            35, 34, 38,  38, 39, 35,   // Atrás
-        };
+        
+        // Objeto computadora usando la nueva estructura
+        private Objeto _computadora;
 
         public CubeWindow()
             : base(
@@ -153,10 +36,11 @@ namespace OpenTKCube
                   new NativeWindowSettings
                   {
                       ClientSize = new Vector2i(800, 600),
-                      Title = "OpenTK - Computadora 3D",
+                      Title = "OpenTK - Computadora 3D - Estructurado",
                   })
         { 
             _camera = new Camera(new Vector3(0.0f, 10.0f, 30.0f));
+            _computadora = Computadora.CrearComputadora();
         }
 
         protected override void OnLoad()
@@ -173,12 +57,18 @@ namespace OpenTKCube
             // VBO
             _vbo = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-            GL.BufferData(BufferTarget.ArrayBuffer, _vertices.Length * sizeof(float), _vertices, BufferUsageHint.StaticDraw);
+            
+            // Obtener datos de vértices de la computadora
+            var vertices = _computadora.GetVertexData();
+            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
 
             // EBO
             _ebo = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, _indices.Length * sizeof(uint), _indices, BufferUsageHint.StaticDraw);
+            
+            // Obtener índices de la computadora
+            var indices = _computadora.GetIndices(0);
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
 
             // Compilar shaders y crear programa
             string vertexPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Shaders", "shader.vert");
@@ -279,7 +169,8 @@ namespace OpenTKCube
             GL.UniformMatrix4(_uModel, false, ref model);
 
             // Dibujar
-            GL.DrawElements(PrimitiveType.Triangles, _indices.Length, DrawElementsType.UnsignedInt, 0);
+            var indices = _computadora.GetIndices(0);
+            GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
 
             SwapBuffers();
         }
