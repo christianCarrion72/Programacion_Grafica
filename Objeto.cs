@@ -98,41 +98,6 @@ namespace proyectoPG
             return new List<Parte>(partes.Values);
         }
 
-        public float[] GetVertexData()
-        {
-            var data = new List<float>();
-            foreach (var parte in partes.Values)
-            {
-                data.AddRange(parte.GetVertexData());
-            }
-            return data.ToArray();
-        }
-
-        public uint[] GetIndices(int startIndex)
-        {
-            var indices = new List<uint>();
-            int currentIndex = startIndex;
-
-            foreach (var parte in partes.Values)
-            {
-                var parteIndices = parte.GetIndices(currentIndex);
-                indices.AddRange(parteIndices);
-                currentIndex += parte.GetTotalVertexCount();
-            }
-
-            return indices.ToArray();
-        }
-
-        public int GetTotalVertexCount()
-        {
-            int count = 0;
-            foreach (var parte in partes.Values)
-            {
-                count += parte.GetTotalVertexCount();
-            }
-            return count;
-        }
-
         public void Dibujar(int vao)
         {
             foreach (var parte in partes.Values)

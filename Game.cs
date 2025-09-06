@@ -26,7 +26,7 @@ namespace OpenTKCube
         // Rotación simple
         private float _angle = 0f;
         
-        // Objeto 3D genérico cargado desde JSON
+        // Objeto cargado desde JSON
         private Objeto _objeto3D = new Objeto();
 
         // Ruta del archivo JSON
@@ -167,18 +167,6 @@ namespace OpenTKCube
                 }
             }
 
-            // F1: Mostrar ayuda
-            if (KeyboardState.IsKeyPressed(Keys.F1))
-            {
-                Console.WriteLine("=== CONTROLES ===");
-                Console.WriteLine("ESC: Salir");
-                Console.WriteLine("F1: Mostrar esta ayuda");
-                Console.WriteLine("F2: Guardar objeto actual");
-                Console.WriteLine("F5: Recargar desde JSON");
-                Console.WriteLine("F3: Crear nueva computadora");
-                Console.WriteLine("WASD + Mouse: Controlar cámara");
-            }
-
             // Actualizar la cámara
             _camera.HandleInput(KeyboardState, (float)args.Time);
 
@@ -203,7 +191,6 @@ namespace OpenTKCube
             var model = Matrix4.CreateTranslation(0f, 0f, 0f);
             GL.UniformMatrix4(_uModel, false, ref model);
 
-            // Dibujar el objeto 3D genérico
             _objeto3D?.Dibujar(_vao);
 
             SwapBuffers();

@@ -186,9 +186,9 @@ namespace proyectoPG
             }
         }
 
-        ~Cara()
+        /*~Cara()
         {
 
-        }
+        }*/
     }
 } 

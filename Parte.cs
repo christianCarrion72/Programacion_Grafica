@@ -104,42 +104,6 @@ namespace proyectoPG
             return caras.Count;
         }
 
-
-        public float[] GetVertexData()
-        {
-            var data = new List<float>();
-            foreach (var cara in caras)
-            {
-                data.AddRange(cara.GetVertexData());
-            }
-            return data.ToArray();
-        }
-
-        public uint[] GetIndices(int startIndex)
-        {
-            var indices = new List<uint>();
-            int currentIndex = startIndex;
-
-            foreach (var cara in caras)
-            {
-                var caraIndices = cara.GetIndices(currentIndex);
-                indices.AddRange(caraIndices);
-                currentIndex += cara.GetVertexCount();
-            }
-
-            return indices.ToArray();
-        }
-
-        public int GetTotalVertexCount()
-        {
-            int count = 0;
-            foreach (var cara in caras)
-            {
-                count += cara.GetVertexCount();
-            }
-            return count;
-        }
-
         public void Dibujar(int vao)
         {
             foreach (var cara in caras)
