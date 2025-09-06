@@ -2,13 +2,25 @@ using System;
 using System.Collections.Generic;
 using OpenTK.Mathematics;
 using OpenTK.Graphics.OpenGL4;
+using Newtonsoft.Json;
 
 namespace proyectoPG
 {
+    [JsonObject]
     public class Cara
     {
+        [JsonProperty("color")]
         public Vector3 color;
+
+        [JsonProperty("vertices")]
         public List<Vertice> vertices;
+
+        [JsonIgnore]
+        private int _vbo;
+        [JsonIgnore]
+        private int _ebo;
+        [JsonIgnore]
+        private bool _buffersInitialized = false;
 
         public Cara()
         {
@@ -37,10 +49,10 @@ namespace proyectoPG
         {
             vertices.Add(vertice);
         }
-        
+
         public bool RemoveVertice(Vertice vertice)
         {
-            return vertices.Remove(vertice); // elimina si lo encuentra
+            return vertices.Remove(vertice);
         }
 
         public void RemoveVerticeAt(int index)
@@ -51,7 +63,7 @@ namespace proyectoPG
 
         public void ClearVertices()
         {
-            vertices.Clear(); 
+            vertices.Clear();
         }
 
         public bool ContainsVertice(Vertice vertice)
@@ -84,10 +96,10 @@ namespace proyectoPG
             return data.ToArray();
         }
 
-        public uint[] GetIndices(int startIndex)
+        public uint[] GetIndices(int startIndex = 0)
         {
             var indices = new List<uint>();
-            
+
             // Para un polígono de 4 vértices, crear 2 triángulos
             if (vertices.Count == 4)
             {
@@ -95,7 +107,7 @@ namespace proyectoPG
                 indices.Add((uint)startIndex);
                 indices.Add((uint)(startIndex + 1));
                 indices.Add((uint)(startIndex + 2));
-                
+
                 // Segundo triángulo
                 indices.Add((uint)startIndex);
                 indices.Add((uint)(startIndex + 2));
@@ -108,13 +120,75 @@ namespace proyectoPG
                 indices.Add((uint)(startIndex + 1));
                 indices.Add((uint)(startIndex + 2));
             }
-            
+
             return indices.ToArray();
         }
 
         public int GetVertexCount()
         {
             return vertices.Count;
+        }
+
+        private void InitializeBuffers()
+        {
+            if (_buffersInitialized || vertices.Count == 0)
+                return;
+
+            //Generar VBO
+            _vbo = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
+            var vertexData = GetVertexData();
+            GL.BufferData(BufferTarget.ArrayBuffer, vertexData.Length * sizeof(float), vertexData, BufferUsageHint.StaticDraw);
+
+            // Generar EBO
+            _ebo = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
+            var indices = GetIndices();
+            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
+
+            _buffersInitialized = true;
+        }
+
+        public void Dibujar(int vao)
+        {
+            if (vertices.Count == 0)
+                return;
+
+            InitializeBuffers();
+
+            GL.BindVertexArray(vao);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
+            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
+
+            // Configurar atributos de vértice
+            int stride = (3 + 3) * sizeof(float);
+
+            // Posición (location = 0)
+            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, stride, 0);
+            GL.EnableVertexAttribArray(0);
+
+            // Color (location = 1)
+            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, stride, 3 * sizeof(float));
+            GL.EnableVertexAttribArray(1);
+
+            // Dibujar elementos
+            var indices = GetIndices();
+            GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
+        }
+
+        public void LiberarRecursos()
+        {
+            if (_buffersInitialized)
+            {
+                GL.DeleteBuffer(_vbo);
+                GL.DeleteBuffer(_ebo);
+                _buffersInitialized = false;
+            }
+        }
+
+        ~Cara()
+        {
+
         }
     }
 } 

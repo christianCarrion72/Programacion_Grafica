@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
 using OpenTK.Windowing.Common;
@@ -12,8 +13,6 @@ namespace OpenTKCube
     {
         // Buffers / Shaders
         private int _vao;
-        private int _vbo;
-        private int _ebo;
         private int _shaderProgram;
 
         // Uniforms
@@ -21,14 +20,17 @@ namespace OpenTKCube
         private int _uView;
         private int _uProjection;
 
-        //Camara
+        // Camara
         private Camera _camera;
 
         // Rotación simple
         private float _angle = 0f;
         
-        // Objeto computadora usando la nueva estructura
-        private Objeto _computadora;
+        // Objeto 3D genérico cargado desde JSON
+        private Objeto _objeto3D = new Objeto();
+
+        // Ruta del archivo JSON
+        private string _rutaJson = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "objeto3d.json");
 
         public CubeWindow()
             : base(
@@ -36,11 +38,19 @@ namespace OpenTKCube
                   new NativeWindowSettings
                   {
                       ClientSize = new Vector2i(800, 600),
-                      Title = "OpenTK - Computadora 3D - Estructurado",
+                      Title = "OpenTK - Objeto 3D desde JSON",
                   })
         { 
             _camera = new Camera(new Vector3(0.0f, 10.0f, 30.0f));
-            _computadora = Computadora.CrearComputadora();
+            CargarObjetoDesdeJson();
+        }
+
+        private void CargarObjetoDesdeJson()
+        {
+            _objeto3D = Serializer.CargarConFallback(_rutaJson, () => Computadora.CrearComputadora());
+            
+            Console.WriteLine($"Objeto 3D cargado desde: {_rutaJson}");
+            //Console.WriteLine($"El objeto contiene {_objeto3D.CountPartes()} partes: {string.Join(", ", _objeto3D.GetParteNames())}");
         }
 
         protected override void OnLoad()
@@ -53,22 +63,6 @@ namespace OpenTKCube
             // VAO
             _vao = GL.GenVertexArray();
             GL.BindVertexArray(_vao);
-
-            // VBO
-            _vbo = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ArrayBuffer, _vbo);
-            
-            // Obtener datos de vértices de la computadora
-            var vertices = _computadora.GetVertexData();
-            GL.BufferData(BufferTarget.ArrayBuffer, vertices.Length * sizeof(float), vertices, BufferUsageHint.StaticDraw);
-
-            // EBO
-            _ebo = GL.GenBuffer();
-            GL.BindBuffer(BufferTarget.ElementArrayBuffer, _ebo);
-            
-            // Obtener índices de la computadora
-            var indices = _computadora.GetIndices(0);
-            GL.BufferData(BufferTarget.ElementArrayBuffer, indices.Length * sizeof(uint), indices, BufferUsageHint.StaticDraw);
 
             // Compilar shaders y crear programa
             string vertexPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Shaders", "shader.vert");
@@ -93,24 +87,10 @@ namespace OpenTKCube
 
             GL.UseProgram(_shaderProgram);
 
-            // Atributos de vértice: posición (loc=0) y color (loc=1)
-            int stride = (3 + 3) * sizeof(float);
-
-            // Posición
-            GL.VertexAttribPointer(0, 3, VertexAttribPointerType.Float, false, stride, 0);
-            GL.EnableVertexAttribArray(0);
-
-            // Color (offset 3 floats)
-            GL.VertexAttribPointer(1, 3, VertexAttribPointerType.Float, false, stride, 3 * sizeof(float));
-            GL.EnableVertexAttribArray(1);
-
             // Uniforms
             _uModel = GL.GetUniformLocation(_shaderProgram, "model");
             _uView = GL.GetUniformLocation(_shaderProgram, "view");
             _uProjection = GL.GetUniformLocation(_shaderProgram, "projection");
-
-            // Inicializar la cámara
-            _camera = new Camera(new Vector3(0.0f, 10.0f, 30.0f));
 
             // Configurar la vista inicial
             var view = _camera.GetViewMatrix();
@@ -144,6 +124,61 @@ namespace OpenTKCube
             if (KeyboardState.IsKeyDown(Keys.Escape))
                 Close();
 
+            // F5: Recargar objeto desde JSON
+            if (KeyboardState.IsKeyPressed(Keys.F5))
+            {
+                Console.WriteLine("Recargando objeto 3D desde JSON...");
+                _objeto3D?.LiberarRecursos();
+                CargarObjetoDesdeJson();
+            }
+
+            // F2: Guardar el objeto actual en JSON
+            if (KeyboardState.IsKeyPressed(Keys.F2))
+            {
+                try
+                {
+                    if (_objeto3D != null)
+                    {
+                        Serializer.Guardar(_objeto3D, _rutaJson);
+                        Console.WriteLine($"Objeto 3D guardado en: {_rutaJson}");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error al guardar: {ex.Message}");
+                }
+            }
+
+            // F3: Crear una nueva computadora y guardarla
+            if (KeyboardState.IsKeyPressed(Keys.F3))
+            {
+                try
+                {
+                    var nuevaComputadora = Computadora.CrearComputadora();
+                    Serializer.Guardar(nuevaComputadora, _rutaJson);
+                    Console.WriteLine("Nueva computadora creada y guardada");
+                    
+                    _objeto3D?.LiberarRecursos();
+                    CargarObjetoDesdeJson();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error al crear nueva computadora: {ex.Message}");
+                }
+            }
+
+            // F1: Mostrar ayuda
+            if (KeyboardState.IsKeyPressed(Keys.F1))
+            {
+                Console.WriteLine("=== CONTROLES ===");
+                Console.WriteLine("ESC: Salir");
+                Console.WriteLine("F1: Mostrar esta ayuda");
+                Console.WriteLine("F2: Guardar objeto actual");
+                Console.WriteLine("F5: Recargar desde JSON");
+                Console.WriteLine("F3: Crear nueva computadora");
+                Console.WriteLine("WASD + Mouse: Controlar cámara");
+            }
+
             // Actualizar la cámara
             _camera.HandleInput(KeyboardState, (float)args.Time);
 
@@ -152,7 +187,7 @@ namespace OpenTKCube
             GL.UseProgram(_shaderProgram);
             GL.UniformMatrix4(_uView, false, ref view);
 
-            // Rotación automática
+            // Rotación automática (opcional)
             _angle += (float)args.Time * 60f; 
         }
 
@@ -163,14 +198,13 @@ namespace OpenTKCube
             GL.Clear(ClearBufferMask.ColorBufferBit | ClearBufferMask.DepthBufferBit);
 
             GL.UseProgram(_shaderProgram);
-            GL.BindVertexArray(_vao);
 
+            // Configurar matriz de modelo
             var model = Matrix4.CreateTranslation(0f, 0f, 0f);
             GL.UniformMatrix4(_uModel, false, ref model);
 
-            // Dibujar
-            var indices = _computadora.GetIndices(0);
-            GL.DrawElements(PrimitiveType.Triangles, indices.Length, DrawElementsType.UnsignedInt, 0);
+            // Dibujar el objeto 3D genérico
+            _objeto3D?.Dibujar(_vao);
 
             SwapBuffers();
         }
@@ -179,8 +213,9 @@ namespace OpenTKCube
         {
             base.OnUnload();
 
-            GL.DeleteBuffer(_vbo);
-            GL.DeleteBuffer(_ebo);
+            // Liberar recursos del objeto
+            _objeto3D?.LiberarRecursos();
+
             GL.DeleteVertexArray(_vao);
             GL.DeleteProgram(_shaderProgram);
         }

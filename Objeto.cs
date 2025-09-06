@@ -1,12 +1,17 @@
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using OpenTK.Mathematics;
 
 namespace proyectoPG
 {
+    [JsonObject]
     public class Objeto
     {
+        [JsonProperty("centro")]
         public Vertice centro;
+
+        [JsonProperty("partes")]
         public Dictionary<string, Parte> partes;
 
         public Objeto()
@@ -107,14 +112,14 @@ namespace proyectoPG
         {
             var indices = new List<uint>();
             int currentIndex = startIndex;
-            
+
             foreach (var parte in partes.Values)
             {
                 var parteIndices = parte.GetIndices(currentIndex);
                 indices.AddRange(parteIndices);
                 currentIndex += parte.GetTotalVertexCount();
             }
-            
+
             return indices.ToArray();
         }
 
@@ -126,6 +131,30 @@ namespace proyectoPG
                 count += parte.GetTotalVertexCount();
             }
             return count;
+        }
+
+        public void Dibujar(int vao)
+        {
+            foreach (var parte in partes.Values)
+            {
+                parte.Dibujar(vao);
+            }
+        }
+
+        public void DibujarParte(string nombreParte, int vao)
+        {
+            if (partes.TryGetValue(nombreParte, out var parte))
+            {
+                parte.Dibujar(vao);
+            }
+        }
+
+        public void LiberarRecursos()
+        {
+            foreach (var parte in partes.Values)
+            {
+                parte.LiberarRecursos();
+            }
         }
     }
 } 
