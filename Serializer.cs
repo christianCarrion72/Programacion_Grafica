@@ -47,12 +47,6 @@ namespace proyectoPG
             }
         }
 
-        public static void CrearComputadoraPorDefecto(string rutaArchivo)
-        {
-            var computadora = Computadora.CrearComputadora();
-            CrearArchivo(computadora, rutaArchivo);
-        }
-
         public static Objeto CargarConFallback(string rutaArchivo, Func<Objeto> objetoPorDefecto)
         {
             try
