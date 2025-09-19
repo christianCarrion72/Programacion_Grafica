@@ -32,6 +32,8 @@ namespace OpenTKCube
         // Ruta del archivo JSON
         private string _rutaJson = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "objeto3d.json");
 
+        private Escenario _escenario = new Escenario();
+
         public CubeWindow()
             : base(
                   GameWindowSettings.Default,
@@ -40,7 +42,7 @@ namespace OpenTKCube
                       ClientSize = new Vector2i(800, 600),
                       Title = "OpenTK - Objeto 3D desde JSON",
                   })
-        { 
+        {
             _camera = new Camera(new Vector3(0.0f, 10.0f, 30.0f));
             CargarObjetoDesdeJson();
         }
@@ -166,6 +168,34 @@ namespace OpenTKCube
                     Console.WriteLine($"Error al crear nueva computadora: {ex.Message}");
                 }
             }
+            var kb = KeyboardState;
+            // Trasladar con flechas
+            if (kb.IsKeyDown(Keys.KeyPad6))
+                _objeto3D?.Trasladar(new Vector3(0.05f, 0f, 0f));
+            if (kb.IsKeyDown(Keys.KeyPad4))
+                _objeto3D?.Trasladar(new Vector3(-0.05f, 0f, 0f));
+            if (kb.IsKeyDown(Keys.KeyPad8))
+                _objeto3D?.Trasladar(new Vector3(0f, 0.05f, 0f));
+            if (kb.IsKeyDown(Keys.KeyPad2))
+                _objeto3D?.Trasladar(new Vector3(0f, -0.05f, 0f));
+
+            // Escalar con teclado numérico + y -
+            if (kb.IsKeyDown(Keys.KeyPadAdd))
+                _objeto3D?.Escalar(new Vector3(1.01f, 1.01f, 1.01f));
+            if (kb.IsKeyDown(Keys.KeyPadSubtract))
+                _objeto3D?.Escalar(new Vector3(0.99f, 0.99f, 0.99f));
+
+            // Rotar con R
+            if (kb.IsKeyDown(Keys.R))
+            {
+                Matrix4 rotY = Matrix4.CreateRotationY(MathHelper.DegreesToRadians(1f));
+                _objeto3D?.Rotar(rotY);
+                //_objeto3D?.partes["monitor"].Rotar(rotY);
+            }
+
+            // Reflejar con F
+            if (kb.IsKeyPressed(Keys.F))
+                _objeto3D?.Reflejar(new Vector3(-1f, 1f, 1f));
 
             // Actualizar la cámara
             _camera.HandleInput(KeyboardState, (float)args.Time);

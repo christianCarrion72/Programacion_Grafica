@@ -190,5 +190,54 @@ namespace proyectoPG
         {
 
         }*/
+        public void Rotar(Matrix4 matrizRotacion)
+        {
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                var v = vertices[i].ToVector3();
+                v = Vector3.TransformPosition(v, matrizRotacion); 
+                vertices[i] = new Vertice(v.X, v.Y, v.Z);
+            }
+            _buffersInitialized = false;
+        }
+
+        public void Trasladar(Vector3 traslacion)
+        {
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                vertices[i] = new Vertice(
+                    vertices[i].X + traslacion.X,
+                    vertices[i].Y + traslacion.Y,
+                    vertices[i].Z + traslacion.Z
+                );
+            }
+            _buffersInitialized = false;
+        }
+
+        public void Escalar(Vector3 escala)
+        {
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                vertices[i] = new Vertice(
+                    vertices[i].X * escala.X,
+                    vertices[i].Y * escala.Y,
+                    vertices[i].Z * escala.Z
+                );
+            }
+            _buffersInitialized = false;
+        }
+
+        public void Reflejar(Vector3 eje)
+        {
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                vertices[i] = new Vertice(
+                    vertices[i].X * eje.X,
+                    vertices[i].Y * eje.Y,
+                    vertices[i].Z * eje.Z
+                );
+            }
+            _buffersInitialized = false;
+        }
     }
 } 

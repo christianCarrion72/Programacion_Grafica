@@ -121,5 +121,30 @@ namespace proyectoPG
                 parte.LiberarRecursos();
             }
         }
+
+        public void Rotar(Matrix4 matrizRotacion)
+        {
+            foreach (var parte in partes.Values)
+                parte.Rotar(matrizRotacion);
+        }
+
+        public void Trasladar(Vector3 traslacion)
+        {
+            foreach (var parte in partes.Values)
+                parte.Trasladar(traslacion);
+            centro = new Vertice(centro.X + traslacion.X, centro.Y + traslacion.Y, centro.Z + traslacion.Z);
+        }
+
+        public void Escalar(Vector3 escala)
+        {
+            foreach (var parte in partes.Values)
+                parte.Escalar(escala);
+        }
+
+        public void Reflejar(Vector3 eje)
+        {
+            foreach (var parte in partes.Values)
+                parte.Reflejar(eje);
+        }
     }
 } 
