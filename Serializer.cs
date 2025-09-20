@@ -6,7 +6,8 @@ namespace proyectoPG
 {
     public static class Serializer
     {
-        public static void Guardar(Objeto objeto, string rutaArchivo)
+        // Guardar cualquier objeto en JSON
+        public static void Guardar<T>(T objeto, string rutaArchivo)
         {
             var settings = new JsonSerializerSettings
             {
@@ -18,7 +19,8 @@ namespace proyectoPG
             File.WriteAllText(rutaArchivo, json);
         }
 
-        public static Objeto Cargar(string rutaArchivo)
+        // Cargar objeto desde JSON
+        public static T Cargar<T>(string rutaArchivo) where T : new()
         {
             string json = File.ReadAllText(rutaArchivo);
             var settings = new JsonSerializerSettings
@@ -26,20 +28,35 @@ namespace proyectoPG
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                 Converters = { new CustomVector3Converter() }
             };
-            return JsonConvert.DeserializeObject<Objeto>(json, settings) ?? new Objeto();
+            return JsonConvert.DeserializeObject<T>(json, settings) ?? new T();
         }
 
-        public static void CrearArchivo(Objeto objeto, string rutaArchivo)
+        // Métodos específicos para Objeto (para mantener compatibilidad)
+        public static Objeto CargarObjeto(string rutaArchivo)
+        {
+            return Cargar<Objeto>(rutaArchivo);
+        }
+
+        // Métodos específicos para Escenario
+        public static Escenario CargarEscenario(string rutaArchivo)
+        {
+            return Cargar<Escenario>(rutaArchivo);
+        }
+
+        // Crear archivo con un objeto específico (genérico)
+        public static void CrearArchivo<T>(T objeto, string rutaArchivo)
         {
             Guardar(objeto, rutaArchivo);
         }
 
+        // Verificar si el archivo existe
         public static bool ArchivoExiste(string rutaArchivo)
         {
             return File.Exists(rutaArchivo);
         }
 
-        public static void CrearArchivoSiNoExiste(Objeto objeto, string rutaArchivo)
+        // Crear archivo solo si no existe
+        public static void CrearArchivoSiNoExiste<T>(T objeto, string rutaArchivo)
         {
             if (!ArchivoExiste(rutaArchivo))
             {
@@ -47,13 +64,21 @@ namespace proyectoPG
             }
         }
 
-        public static Objeto CargarConFallback(string rutaArchivo, Func<Objeto> objetoPorDefecto)
+        // Método de conveniencia para crear archivos con escenarios predefinidos
+        public static void CrearEscenarioPorDefecto(string rutaArchivo)
+        {
+            var escenario = Computadora.CrearEscenarioComputadora();
+            CrearArchivo(escenario, rutaArchivo);
+        }
+
+        // Cargar con manejo de errores y fallback para Objeto
+        public static Objeto CargarObjetoConFallback(string rutaArchivo, Func<Objeto> objetoPorDefecto)
         {
             try
             {
                 if (ArchivoExiste(rutaArchivo))
                 {
-                    return Cargar(rutaArchivo);
+                    return CargarObjeto(rutaArchivo);
                 }
                 else
                 {
@@ -67,6 +92,30 @@ namespace proyectoPG
                 Console.WriteLine($"Error al cargar desde JSON: {ex.Message}");
                 Console.WriteLine("Creando objeto por defecto...");
                 return objetoPorDefecto();
+            }
+        }
+
+        // Cargar con manejo de errores y fallback para Escenario
+        public static Escenario CargarEscenarioConFallback(string rutaArchivo, Func<Escenario> escenarioPorDefecto)
+        {
+            try
+            {
+                if (ArchivoExiste(rutaArchivo))
+                {
+                    return CargarEscenario(rutaArchivo);
+                }
+                else
+                {
+                    var escenario = escenarioPorDefecto();
+                    CrearArchivo(escenario, rutaArchivo);
+                    return escenario;
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error al cargar escenario desde JSON: {ex.Message}");
+                Console.WriteLine("Creando escenario por defecto...");
+                return escenarioPorDefecto();
             }
         }
     }

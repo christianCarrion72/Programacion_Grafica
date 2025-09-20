@@ -26,13 +26,11 @@ namespace OpenTKCube
         // Rotación simple
         private float _angle = 0f;
         
-        // Objeto cargado desde JSON
-        private Objeto _objeto3D = new Objeto();
+        // Escenario cargado desde JSON
+        private Escenario _escenario = new Escenario();
 
         // Ruta del archivo JSON
-        private string _rutaJson = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "objeto3d.json");
-
-        private Escenario _escenario = new Escenario();
+        private string _rutaJson = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "escenario.json");
 
         public CubeWindow()
             : base(
@@ -40,19 +38,19 @@ namespace OpenTKCube
                   new NativeWindowSettings
                   {
                       ClientSize = new Vector2i(800, 600),
-                      Title = "OpenTK - Objeto 3D desde JSON",
+                      Title = "OpenTK - Escenario 3D desde JSON",
                   })
         {
             _camera = new Camera(new Vector3(0.0f, 10.0f, 30.0f));
-            CargarObjetoDesdeJson();
+            CargarEscenarioDesdeJson();
         }
 
-        private void CargarObjetoDesdeJson()
+        private void CargarEscenarioDesdeJson()
         {
-            _objeto3D = Serializer.CargarConFallback(_rutaJson, () => Computadora.CrearComputadora());
+            _escenario = Serializer.CargarEscenarioConFallback(_rutaJson, () => Computadora.CrearEscenarioComputadora());
             
-            Console.WriteLine($"Objeto 3D cargado desde: {_rutaJson}");
-            //Console.WriteLine($"El objeto contiene {_objeto3D.CountPartes()} partes: {string.Join(", ", _objeto3D.GetParteNames())}");
+            Console.WriteLine($"Escenario 3D cargado desde: {_rutaJson}");
+            Console.WriteLine($"El escenario contiene {_escenario.CountObjetos()} objetos");
         }
 
         protected override void OnLoad()
@@ -126,23 +124,23 @@ namespace OpenTKCube
             if (KeyboardState.IsKeyDown(Keys.Escape))
                 Close();
 
-            // F5: Recargar objeto desde JSON
+            // F5: Recargar escenario desde JSON
             if (KeyboardState.IsKeyPressed(Keys.F5))
             {
-                Console.WriteLine("Recargando objeto 3D desde JSON...");
-                _objeto3D?.LiberarRecursos();
-                CargarObjetoDesdeJson();
+                Console.WriteLine("Recargando escenario 3D desde JSON...");
+                _escenario?.LiberarRecursos();
+                CargarEscenarioDesdeJson();
             }
 
-            // F2: Guardar el objeto actual en JSON
+            // F2: Guardar el escenario actual en JSON
             if (KeyboardState.IsKeyPressed(Keys.F2))
             {
                 try
                 {
-                    if (_objeto3D != null)
+                    if (_escenario != null)
                     {
-                        Serializer.Guardar(_objeto3D, _rutaJson);
-                        Console.WriteLine($"Objeto 3D guardado en: {_rutaJson}");
+                        Serializer.Guardar(_escenario, _rutaJson);
+                        Console.WriteLine($"Escenario 3D guardado en: {_rutaJson}");
                     }
                 }
                 catch (Exception ex)
@@ -151,51 +149,50 @@ namespace OpenTKCube
                 }
             }
 
-            // F3: Crear una nueva computadora y guardarla
+            // F3: Crear un nuevo escenario y guardarlo
             if (KeyboardState.IsKeyPressed(Keys.F3))
             {
                 try
                 {
-                    var nuevaComputadora = Computadora.CrearComputadora();
-                    Serializer.Guardar(nuevaComputadora, _rutaJson);
-                    Console.WriteLine("Nueva computadora creada y guardada");
+                    var nuevoEscenario = Computadora.CrearEscenarioComputadora();
+                    Serializer.Guardar(nuevoEscenario, _rutaJson);
+                    Console.WriteLine("Nuevo escenario creado y guardado");
                     
-                    _objeto3D?.LiberarRecursos();
-                    CargarObjetoDesdeJson();
+                    _escenario?.LiberarRecursos();
+                    CargarEscenarioDesdeJson();
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error al crear nueva computadora: {ex.Message}");
+                    Console.WriteLine($"Error al crear nuevo escenario: {ex.Message}");
                 }
             }
             var kb = KeyboardState;
             // Trasladar con flechas
             if (kb.IsKeyDown(Keys.KeyPad6))
-                _objeto3D?.Trasladar(new Vector3(0.05f, 0f, 0f));
+                _escenario?.Trasladar(new Vector3(0.05f, 0f, 0f));
             if (kb.IsKeyDown(Keys.KeyPad4))
-                _objeto3D?.Trasladar(new Vector3(-0.05f, 0f, 0f));
+                _escenario?.Trasladar(new Vector3(-0.05f, 0f, 0f));
             if (kb.IsKeyDown(Keys.KeyPad8))
-                _objeto3D?.Trasladar(new Vector3(0f, 0.05f, 0f));
+                _escenario?.Trasladar(new Vector3(0f, 0.05f, 0f));
             if (kb.IsKeyDown(Keys.KeyPad2))
-                _objeto3D?.Trasladar(new Vector3(0f, -0.05f, 0f));
+                _escenario?.Trasladar(new Vector3(0f, -0.05f, 0f));
 
             // Escalar con teclado numérico + y -
             if (kb.IsKeyDown(Keys.KeyPadAdd))
-                _objeto3D?.Escalar(new Vector3(1.01f, 1.01f, 1.01f));
+                _escenario?.Escalar(new Vector3(1.01f, 1.01f, 1.01f));
             if (kb.IsKeyDown(Keys.KeyPadSubtract))
-                _objeto3D?.Escalar(new Vector3(0.99f, 0.99f, 0.99f));
+                _escenario?.Escalar(new Vector3(0.99f, 0.99f, 0.99f));
 
             // Rotar con R
             if (kb.IsKeyDown(Keys.R))
             {
                 Matrix4 rotY = Matrix4.CreateRotationY(MathHelper.DegreesToRadians(1f));
-                _objeto3D?.Rotar(rotY);
-                //_objeto3D?.partes["monitor"].Rotar(rotY);
+                _escenario?.Rotar(rotY);
             }
 
             // Reflejar con F
             if (kb.IsKeyPressed(Keys.F))
-                _objeto3D?.Reflejar(new Vector3(-1f, 1f, 1f));
+                _escenario?.Reflejar(new Vector3(-1f, 1f, 1f));
 
             // Actualizar la cámara
             _camera.HandleInput(KeyboardState, (float)args.Time);
@@ -221,7 +218,7 @@ namespace OpenTKCube
             var model = Matrix4.CreateTranslation(0f, 0f, 0f);
             GL.UniformMatrix4(_uModel, false, ref model);
 
-            _objeto3D?.Dibujar(_vao);
+            _escenario?.Dibujar(_vao);
 
             SwapBuffers();
         }
@@ -230,8 +227,8 @@ namespace OpenTKCube
         {
             base.OnUnload();
 
-            // Liberar recursos del objeto
-            _objeto3D?.LiberarRecursos();
+            // Liberar recursos del escenario
+            _escenario?.LiberarRecursos();
 
             GL.DeleteVertexArray(_vao);
             GL.DeleteProgram(_shaderProgram);
