@@ -8,6 +8,7 @@ namespace proyectoPG
     [JsonObject]
     public class Escenario
     {
+        [JsonProperty]
         private Dictionary<string, Objeto> objetos;
 
         public Escenario()
